@@ -15,9 +15,14 @@ private:
     double pendulum_string_length;  // 振り子の間の糸の長さ
     vector<double>
         pendulum_thetas;  // それぞれの振り子の中心とx軸の正の向きとの成す角
+    vector<double> pendulum_velocitys;  // 角速度
+
+    void compute_A(double** A) const;
+    void compute_b(double* b) const;
 
 public:
     static const double PI;
+    static const double G;
 
     Pendulum(int pendulum_num, double pendulum_string_length);
     vector<pair<double, double>> compute_coords() const;
