@@ -1,3 +1,4 @@
+#include <gauss_elimination.h>
 #include <pendulum.h>
 
 #include <cmath>
@@ -11,12 +12,16 @@ using namespace std;
 */
 const double Pendulum::PI = 3.1415926535;
 const double Pendulum::G = 1.0;
+const double Pendulum::time_delta = 0.01;
 Pendulum::Pendulum(int pendulum_num, double pendulum_string_length)
     : pendulum_num(pendulum_num), pendulum_string_length(pendulum_string_length)
 {
     // 下に振り子が伸びるように初期化
     pendulum_thetas = vector<double>(pendulum_num, PI / 2.0);
     pendulum_velocitys = vector<double>(pendulum_num, 0.0);
+    for(int i = 0; i < pendulum_num; i++) {
+        pendulum_thetas[i] = PI / 2.0 * (double)i;
+    }
 }
 
 vector<pair<double, double>> Pendulum::compute_coords() const
@@ -32,7 +37,7 @@ vector<pair<double, double>> Pendulum::compute_coords() const
     return ret;
 }
 
-void Pendulum::compute_A(double **A) const
+void Pendulum::compute_A(double** A) const
 {
     /* thetaの2回微分についての方程式の係数行列をAに格納する. */
     for(int i = 0; i < pendulum_num; i++) {
@@ -46,7 +51,7 @@ void Pendulum::compute_A(double **A) const
     return;
 }
 
-void Pendulum::compute_b(double *b) const
+void Pendulum::compute_b(double* b) const
 {
     for(int i = 0; i < pendulum_num; i++) {
         b[i] = 0.0;
@@ -66,4 +71,21 @@ void Pendulum::compute_b(double *b) const
     }
     return;
 }
+
+void Pendulum::move()
+{
+    double** A = (double**)malloc(sizeof(double*) * pendulum_num);
+    double* b = (double*)malloc(sizeof(double) * pendulum_num);
+    double* x = (double*)malloc(sizeof(double) * pendulum_num);
+    for(int i = 0; i < pendulum_num; i++) {
+        A[i] = (double*)malloc(sizeof(double) * pendulum_num);
+    }
+    gauss_elimination(A, b, x, pendulum_num);
+    for(int i = 0; i < pendulum_num; i++) {
+        pendulum_velocitys[i] = pendulum_velocitys[i] + x[i] * time_delta;
+        pendulum_thetas[i] =
+            pendulum_thetas[i] + pendulum_velocitys[i] * time_delta;
+    }
+}
+
 int Pendulum::get_pendulum_num() const { return pendulum_num; }

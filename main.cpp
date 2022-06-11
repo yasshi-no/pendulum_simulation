@@ -80,14 +80,14 @@ void render_pendulum(SDL_Renderer* renderer, const Pendulum& pendulum, double x,
                      double y, double r)
 {
     vector<pair<double, double>> pendulum_coords = pendulum.compute_coords();
-    int bfr_x = 0, bfr_y = 0;
+    int bfr_x = 0.0, bfr_y = 0.0;
     for(int i = 0; i < pendulum.get_pendulum_num(); i++) {
         int aft_x = (int)pendulum_coords[i].first;
         int aft_y = (int)pendulum_coords[i].second;
         SDL_RenderDrawLine(renderer, bfr_x + (int)x, bfr_y + (int)y,
                            aft_x + (int)x, aft_y + (int)y);
         bfr_x = aft_x;
-        aft_x = aft_y;
+        bfr_y = aft_y;
     }
     for(int i = 0; i < pendulum.get_pendulum_num(); i++) {
         render_circle(renderer, pendulum_coords[i].first + x,
@@ -100,18 +100,18 @@ void render_pendulum(SDL_Renderer* renderer, const Pendulum& pendulum, double x,
 int main(int argc, char* argv[])
 {
     Pendulum pendulum(3, 50.0);
-    double** A = (double**)malloc(sizeof(double*) * 3);
-    double* b = (double*)malloc(sizeof(double) * 3);
-    double* x = (double*)malloc(sizeof(double) * 3);
-    for(int i = 0; i < 3; i++) {
-        A[i] = (double*)malloc(sizeof(double) * 3);
-    }
-    A[0][0] = 2.0, A[0][1] = 3.0, A[0][2] = -4.0, b[0] = 2.0;
-    A[1][0] = 11.0, A[1][1] = 9.0, A[1][2] = 4.0, b[1] = -3.0;
-    A[2][0] = -7.0, A[2][1] = 4.0, A[2][2] = -4.0, b[2] = -4.0;
-    gauss_elimination(A, b, x, 3);
-    cout << x[0] << " " << x[1] << " " << x[2] << endl;
-    SDL_Log("%f %f %f\n", x[0], x[1], x[2]);
+    // double** A = (double**)malloc(sizeof(double*) * 3);
+    // double* b = (double*)malloc(sizeof(double) * 3);
+    // double* x = (double*)malloc(sizeof(double) * 3);
+    // for(int i = 0; i < 3; i++) {
+    //     A[i] = (double*)malloc(sizeof(double) * 3);
+    // }
+    // A[0][0] = 2.0, A[0][1] = 3.0, A[0][2] = -4.0, b[0] = 2.0;
+    // A[1][0] = 11.0, A[1][1] = 9.0, A[1][2] = 4.0, b[1] = -3.0;
+    // A[2][0] = -7.0, A[2][1] = 4.0, A[2][2] = -4.0, b[2] = -4.0;
+    // gauss_elimination(A, b, x, 3);
+    // cout << x[0] << " " << x[1] << " " << x[2] << endl;
+    // SDL_Log("%f %f %f\n", x[0], x[1], x[2]);
 
     // SDLを初期化する
     if(!init()) {
@@ -121,9 +121,10 @@ int main(int argc, char* argv[])
     // surfaceを白で埋める
     // SDL_FillRect(screen_surface, NULL,
     //              SDL_MapRGB(screen_surface->format, 0xFF, 0xFF, 0xFF));
-
     // rendererを更新する
-    SDL_UpdateWindowSurface(window);
+    // SDL_UpdateWindowSurface(window);
+    SDL_SetRenderDrawColor(screen_renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+    SDL_RenderFillRect(screen_renderer, NULL);
     SDL_SetRenderDrawColor(screen_renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
     // SDL_RenderDrawLine(screen_renderer, 0, 0, 100, 200);
     render_circle(screen_renderer, 100, 200, 10);
@@ -138,11 +139,22 @@ int main(int argc, char* argv[])
     SDL_Event event;
 
     while(!quit) {
+        // pendulum.move();
+        SDL_RenderClear(screen_renderer);
+        SDL_SetRenderDrawColor(screen_renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+        SDL_RenderFillRect(screen_renderer, NULL);
+        SDL_SetRenderDrawColor(screen_renderer, 255, 255, 255,
+                               SDL_ALPHA_OPAQUE);
+        render_pendulum(screen_renderer, pendulum, 100.0, 100.0, 10);
+        SDL_Log("%f\n", pendulum.compute_coords()[1].second);
+        SDL_RenderPresent(screen_renderer);
+
         while(SDL_PollEvent(&event) != 0) {
             if(event.type == SDL_QUIT) {
                 quit = true;
             }
         }
+        SDL_Delay(100);
     }
     close();
 
