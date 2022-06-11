@@ -11,17 +11,18 @@ using namespace std;
 振り子の角度は, x軸の正の向きとの成す角.
 */
 const double Pendulum::PI = 3.1415926535;
-const double Pendulum::G = 1.0;
+const double Pendulum::G = 4.0;
 const double Pendulum::time_delta = 0.01;
 Pendulum::Pendulum(int pendulum_num, double pendulum_string_length)
     : pendulum_num(pendulum_num), pendulum_string_length(pendulum_string_length)
 {
     // 下に振り子が伸びるように初期化
-    pendulum_thetas = vector<double>(pendulum_num, PI / 2.0);
+    // pendulum_thetas = vector<double>(pendulum_num, PI / 2.0);
+    pendulum_thetas = vector<double>(pendulum_num, 0.0);
     pendulum_velocitys = vector<double>(pendulum_num, 0.0);
-    for(int i = 0; i < pendulum_num; i++) {
-        pendulum_thetas[i] = PI / 2.0 * (double)i;
-    }
+    // for(int i = 0; i < pendulum_num; i++) {
+    //     pendulum_thetas[i] = PI / 2.0 * (double)i;
+    // }
 }
 
 vector<pair<double, double>> Pendulum::compute_coords() const
@@ -80,6 +81,8 @@ void Pendulum::move()
     for(int i = 0; i < pendulum_num; i++) {
         A[i] = (double*)malloc(sizeof(double) * pendulum_num);
     }
+    compute_A(A);
+    compute_b(b);
     gauss_elimination(A, b, x, pendulum_num);
     for(int i = 0; i < pendulum_num; i++) {
         pendulum_velocitys[i] = pendulum_velocitys[i] + x[i] * time_delta;
