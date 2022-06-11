@@ -1,4 +1,5 @@
 #include <SDL.h>
+#include <gauss_elimination.h>
 #include <pendulum.h>
 
 #include <cmath>
@@ -99,6 +100,18 @@ void render_pendulum(SDL_Renderer* renderer, const Pendulum& pendulum, double x,
 int main(int argc, char* argv[])
 {
     Pendulum pendulum(3, 50.0);
+    double** A = (double**)malloc(sizeof(double*) * 3);
+    double* b = (double*)malloc(sizeof(double) * 3);
+    double* x = (double*)malloc(sizeof(double) * 3);
+    for(int i = 0; i < 3; i++) {
+        A[i] = (double*)malloc(sizeof(double) * 3);
+    }
+    A[0][0] = 2.0, A[0][1] = 3.0, A[0][2] = -4.0, b[0] = 2.0;
+    A[1][0] = 11.0, A[1][1] = 9.0, A[1][2] = 4.0, b[1] = -3.0;
+    A[2][0] = -7.0, A[2][1] = 4.0, A[2][2] = -4.0, b[2] = -4.0;
+    gauss_elimination(A, b, x, 3);
+    cout << x[0] << " " << x[1] << " " << x[2] << endl;
+    SDL_Log("%f %f %f\n", x[0], x[1], x[2]);
 
     // SDLを初期化する
     if(!init()) {
