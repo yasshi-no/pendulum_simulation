@@ -12,18 +12,22 @@ using namespace std;
 */
 const double Pendulum::PI = 3.1415926535;
 const double Pendulum::G = 4.0;
-const double Pendulum::time_delta = 0.001;
+const double Pendulum::time_delta = 0.0001;
 Pendulum::Pendulum(int pendulum_num, double pendulum_string_length)
     : pendulum_num(pendulum_num), pendulum_string_length(pendulum_string_length)
 {
     // 下に振り子が伸びるように初期化
     // pendulum_thetas = vector<double>(pendulum_num, PI / 2.0);
     pendulum_thetas = vector<double>(pendulum_num, 0.0);
-    pendulum_velocitys = vector<double>(pendulum_num, 0.0);
+    pendulum_velocitys = vector<double>(pendulum_num, 10.0);
     pendulum_coords_bfr = compute_coords();
+    pendulum_coords_aft = pendulum_coords_bfr;
     // for(int i = 0; i < pendulum_num; i++) {
-    //   pendulum_thetas[i] = PI / 2.0 * (double)i;
+    //     pendulum_thetas[i] = PI / 2.0 * (double)i;
     // }
+    for(double i = 0; i < pendulum_num; i++) {
+        pendulum_velocitys[i] = (double)i * 0.01;
+    }
 }
 
 vector<pair<double, double>> Pendulum::compute_coords() const
@@ -177,33 +181,39 @@ void Pendulum::move()
 double Pendulum::compute_physical_energy() const
 {
     /* 力学的エネルギーを返す. */
-    double bfr_y = 0.0;             // 1つ上の振り子のy座標
     double potential_energy = 0.0;  // 位置エネルギー
+
+    // 極座標からO(pendulum_num)で計算
+    // double bfr_y = 0.0;  // 1つ上の振り子のy座標
     // for(int i = 0; i < pendulum_num; i++) {
     //     double aft_y = bfr_y + pendulum_string_length *
     //     sin(pendulum_thetas[i]); potential_energy = potential_energy - aft_y;
     //     bfr_y = aft_y;
     // }
     // potential_energy = potential_energy * G;
-    // for(int i = 0; i < pendulum_num; i++) {
-    //     for(int j = 0; j <= i; j++) {
-    //         potential_energy =
-    //             potential_energy + cos((PI / 2.0 - pendulum_thetas[j]));
-    //     }
-    // }
-    // potential_energy = potential_energy * G * pendulum_string_length;
 
+    // 極座標からO(pendulum_num^2)で計算
     for(int i = 0; i < pendulum_num; i++) {
-        potential_energy += G * pendulum_coords_aft[i].second;
+        for(int j = 0; j <= i; j++) {
+            potential_energy =
+                potential_energy + cos((PI / 2.0 - pendulum_thetas[j]));
+        }
     }
+    potential_energy = potential_energy * G * pendulum_string_length;
+
+    // 直交座標からO(pendulum_num)で計算
+    // for(int i = 0; i < pendulum_num; i++) {
+    //     potential_energy += G * pendulum_coords_aft[i].second;
+    // }
 
     double kinetic_energy = 0.0;  // 運動エネルギー
 
+    // 極座標からO(pendulum_num^3)で計算
     // for(int i = 0; i < pendulum_num; i++) {
     //     for(int j = 0; j <= i; j++) {
     //         kinetic_energy += pendulum_velocitys[j] * pendulum_velocitys[j];
     //         for(int k = j + 1; k <= i; k++) {
-    //             kinetic_energy += 2 * pendulum_velocitys[j] *
+    //             kinetic_energy += 2.0 * pendulum_velocitys[j] *
     //                               pendulum_velocitys[k] *
     //                               cos(pendulum_thetas[j] -
     //                               pendulum_thetas[i]);
@@ -214,6 +224,7 @@ double Pendulum::compute_physical_energy() const
     //     pendulum_string_length * pendulum_string_length * kinetic_energy
     //     / 2.0;
 
+    // 直交座標からO(pendulum_num)で計算
     for(int i = 0; i < pendulum_num; i++) {
         kinetic_energy +=
             ((pendulum_coords_aft[i].first - pendulum_coords_bfr[i].first) *
@@ -225,6 +236,7 @@ double Pendulum::compute_physical_energy() const
     }
     kinetic_energy = kinetic_energy / 2.0;
 
+    // 極座標からO(pendulum_num^2)で計算
     // double test = 0.0;
     // double bfr_v = 0.0;  // 1つ上の振り子の速度
     // for(int i = 0; i < pendulum_num; i++) {
@@ -239,10 +251,10 @@ double Pendulum::compute_physical_energy() const
     //     bfr_v = aft_v;
     // }
 
-    // double ret = kinetic_energy - potential_energy;
+    double ret = kinetic_energy - potential_energy;
     // double ret = (kinetic_energy - potential_energy) /
     //  (kinetic_energy + potential_energy);
-    double ret = kinetic_energy / potential_energy;
+    // double ret = kinetic_energy / potential_energy;
     // double ret = kinetic_energy;
     // double ret = potential_energy;
     return ret;
