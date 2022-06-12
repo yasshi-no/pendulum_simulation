@@ -64,6 +64,10 @@ void Application::run()
     int cnt = 0;
     double scale = 1.0;
     double scale_change_rate = 1.1;
+    double center_x = 0.0;
+    double center_y = 0.0;
+    int mouse_bfr_x = -1;
+    int mouse_bfr_y = -1;
 
     while(!quit) {
         pendulum.move();
@@ -82,8 +86,8 @@ void Application::run()
         canvas.add_figure(
             make_shared<PendulumFigure>(pendulum.compute_coords(), 5.0));
         // canvasの描画
-        canvas.draw(screen_renderer, screen_width, screen_height, 0.0, 0.0,
-                    scale);
+        canvas.draw(screen_renderer, screen_width, screen_height, center_x,
+                    center_y, scale);
         // 画面の更新
         SDL_RenderPresent(screen_renderer);
 
@@ -94,16 +98,37 @@ void Application::run()
                     quit = true;
                     break;
                 case SDL_MOUSEWHEEL:
-                    SDL_Log("%d %d\n", event.wheel.x, event.wheel.y);
+                    // 拡大縮小
                     if(event.wheel.y > 0) {
                         scale /= scale_change_rate;
                     } else if(event.wheel.y < 0) {
                         scale *= scale_change_rate;
                     }
+                case SDL_MOUSEBUTTONDOWN:
+                    // 移動の開始位置を記録
+                    SDL_GetMouseState(&mouse_bfr_x, &mouse_bfr_y);
+                    break;
+                case SDL_MOUSEBUTTONUP:
+                    mouse_bfr_x = -1;
+                    mouse_bfr_y = -1;
                     break;
                 default:
                     break;
             }
+        }
+
+        // Canvasの移動
+        if(mouse_bfr_x != -1) {
+            int mouse_aft_x, mouse_aft_y;
+            SDL_GetMouseState(&mouse_aft_x, &mouse_aft_y);
+            // 前回からの移動分を-scale倍して動かす
+            int dx = mouse_aft_x - mouse_bfr_x;
+            int dy = mouse_aft_y - mouse_bfr_y;
+            center_x = center_x - (double)dx * scale;
+            center_y = center_y - (double)dy * scale;
+
+            mouse_bfr_x = mouse_aft_x;
+            mouse_bfr_y = mouse_aft_y;
         }
 
         // エネルギー保存の確認
