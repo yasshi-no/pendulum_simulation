@@ -38,3 +38,13 @@ target_link_libraries(canvas PUBLIC
     pendulum
 )
 target_compile_features(canvas PRIVATE cxx_std_11)
+
+# canvas_for_pendulum
+add_library(canvas_for_pendulum STATIC canvas_for_pendulum.cpp ../include/canvas_for_pendulum.h)
+target_include_directories(canvas_for_pendulum PUBLIC 
+    ../include/
+)
+target_link_libraries(canvas_for_pendulum PUBLIC
+    canvas
+)
+target_compile_features(canvas_for_pendulum PRIVATE cxx_std_11)

@@ -23,6 +23,7 @@ target_link_libraries(pendulum_simulator PUBLIC
     gauss_elimination
     application
     canvas
+    canvas_for_pendulum
 )
 
 # コンパイルオプション

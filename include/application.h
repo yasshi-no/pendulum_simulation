@@ -21,8 +21,5 @@ private:
 
 public:
     Application(int screen_width, int screen_height, Pendulum pendulum);
-    void render_circle(SDL_Renderer* renderer, double x, double y, double r);
-    void render_pendulum(SDL_Renderer* renderer, const Pendulum& pendulum,
-                         double x, double y, double r);
     void run();
 };
