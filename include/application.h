@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SDL.h>
+#include <canvas.h>
 #include <pendulum.h>
 
 class Application
@@ -12,6 +13,7 @@ private:
     Pendulum pendulum;
     SDL_Window* window;
     SDL_Renderer* screen_renderer;
+    // Canvas canvas;
 
     bool init();
     bool load_media();

@@ -15,7 +15,7 @@ const int SCREEN_HEIGHT = 640;
 int main(int argc, char* argv[])
 {
     // 振り子の生成
-    double pendulum_num = 3;
+    double pendulum_num = 10;
     vector<double> string_lengths(pendulum_num, 20.0);
     for(int i = 0; i < pendulum_num; i++) {
         string_lengths[i] = 20.0 + 10.0 * (double)(i % 2);
