@@ -13,7 +13,6 @@ const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 640;
 // ウィンドウに関するオブジェクト
 SDL_Window* window = NULL;
-// SDL_Surface* screen_surface = NULL;
 SDL_Renderer* screen_renderer = NULL;
 
 bool init();
@@ -22,10 +21,10 @@ void close();
 
 const double PI = 3.14159265359;
 
-// SDLを初期化する
-// 返り値:成功したか否か
 bool init()
 {
+    /* SDLを初期化する
+    返り値:成功したか否か */
     // SDLを初期化する
     if(SDL_Init(SDL_INIT_VIDEO) < 0) {
         std::cout << "SDLを初期化できませんでした." << std::endl;
@@ -49,11 +48,9 @@ bool init()
     return true;
 }
 
-// SDLを終了する
 void close()
 {
-    // surfaceを解放する
-    // SDL_FreeSurface(screen_surface);
+    /* SDLを終了する. */
 
     // rendererを開放する
     SDL_DestroyRenderer(screen_renderer);
@@ -68,6 +65,7 @@ void close()
 
 void render_circle(SDL_Renderer* renderer, double x, double y, double r)
 {
+    /* 円を描画する */
     for(int i = -(int)r; i < (int)r; i++) {
         double half_span = sqrt(r * r - i * i);
         SDL_RenderDrawLine(screen_renderer, x + i, y - half_span, x + i,
@@ -79,7 +77,9 @@ void render_circle(SDL_Renderer* renderer, double x, double y, double r)
 void render_pendulum(SDL_Renderer* renderer, const Pendulum& pendulum, double x,
                      double y, double r)
 {
-    vector<pair<double, double>> pendulum_coords = pendulum.compute_coords();
+    /* 振り子を描画する. */
+    vector<pair<double, double>> pendulum_coords =
+        pendulum.get_pendulum_coords();
     int bfr_x = 0.0, bfr_y = 0.0;
     for(int i = 0; i < pendulum.get_pendulum_num(); i++) {
         int aft_x = (int)pendulum_coords[i].first;
@@ -99,7 +99,13 @@ void render_pendulum(SDL_Renderer* renderer, const Pendulum& pendulum, double x,
 
 int main(int argc, char* argv[])
 {
-    Pendulum pendulum(10, 20.0);
+    // 振り子の生成
+    double pendulum_num = 10;
+    double pendulum_string_length = 20.0;
+    vector<double> pendulum_thetas = vector<double>(pendulum_num, 0.0);
+    vector<double> pendulum_velocitys = vector<double>(pendulum_num, 0.01);
+    Pendulum pendulum(pendulum_num, pendulum_string_length, pendulum_thetas,
+                      pendulum_velocitys);
 
     // SDLを初期化する
     if(!init()) {
@@ -123,6 +129,7 @@ int main(int argc, char* argv[])
                         (double)(SCREEN_HEIGHT / 2), 5);
         SDL_RenderPresent(screen_renderer);
 
+        // イベントの処理
         while(SDL_PollEvent(&event) != 0) {
             if(event.type == SDL_QUIT) {
                 quit = true;

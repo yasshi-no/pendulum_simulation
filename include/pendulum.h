@@ -29,9 +29,11 @@ public:
     static const double PI;
     static const double G;
 
-    Pendulum(int pendulum_num, double pendulum_string_length);
+    Pendulum(int pendulum_num, double pendulum_string_length,
+             vector<double> pendulum_thetas, vector<double> pendulum_velocitys);
     vector<pair<double, double>> compute_coords() const;
     double compute_physical_energy() const;
-    int get_pendulum_num() const;
     void move();
+    int get_pendulum_num() const;
+    vector<pair<double, double>> get_pendulum_coords() const;
 };

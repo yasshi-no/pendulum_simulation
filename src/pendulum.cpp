@@ -13,21 +13,16 @@ using namespace std;
 const double Pendulum::PI = 3.1415926535;
 const double Pendulum::G = 4.0;
 const double Pendulum::time_delta = 0.0001;
-Pendulum::Pendulum(int pendulum_num, double pendulum_string_length)
-    : pendulum_num(pendulum_num), pendulum_string_length(pendulum_string_length)
+Pendulum::Pendulum(int pendulum_num, double pendulum_string_length,
+                   vector<double> pendulum_thetas,
+                   vector<double> pendulum_velocitys)
+    : pendulum_num(pendulum_num),
+      pendulum_string_length(pendulum_string_length),
+      pendulum_thetas(pendulum_thetas),
+      pendulum_velocitys(pendulum_velocitys)
 {
-    // 下に振り子が伸びるように初期化
-    // pendulum_thetas = vector<double>(pendulum_num, PI / 2.0);
-    pendulum_thetas = vector<double>(pendulum_num, 0.0);
-    pendulum_velocitys = vector<double>(pendulum_num, 10.0);
     pendulum_coords_bfr = compute_coords();
     pendulum_coords_aft = pendulum_coords_bfr;
-    // for(int i = 0; i < pendulum_num; i++) {
-    //     pendulum_thetas[i] = PI / 2.0 * (double)i;
-    // }
-    for(double i = 0; i < pendulum_num; i++) {
-        pendulum_velocitys[i] = (double)i * 0.01;
-    }
 }
 
 vector<pair<double, double>> Pendulum::compute_coords() const
@@ -61,6 +56,7 @@ void Pendulum::compute_A(double** A, const vector<double>& pendulum_thetas,
 void Pendulum::compute_b(double* b, const vector<double>& pendulum_thetas,
                          const vector<double>& pendulum_velocitys) const
 {
+    /* thetaの2回微分についての方程式の定数項ベクトルをbに格納する. */
     for(int i = 0; i < pendulum_num; i++) {
         b[i] = 0.0;
         for(int j = 0; j < pendulum_num; j++) {
@@ -96,7 +92,7 @@ void Pendulum::move()
         pendulum_num, vector<double>(4));  // ルンゲ・クッタ法の係数
     vector<vector<double>> ks_velocitys(
         pendulum_num, vector<double>(4));  // ルンゲ・クッタ法の係数
-    // 1つ目の係数を求める
+    // 1つ目の傾きを求める
     vector<double> velocitys = pendulum_velocitys;
     vector<double> thetas = pendulum_thetas;
     compute_A(A, thetas, velocitys);
@@ -106,7 +102,7 @@ void Pendulum::move()
         ks_velocitys[i][0] = x[i];
         ks_thetas[i][0] = pendulum_velocitys[i];
     }
-    // 2つ目の係数を求める
+    // 2つ目の傾きを求める
     for(int i = 0; i < pendulum_num; i++) {
         velocitys[i] =
             pendulum_velocitys[i] + ks_velocitys[i][0] * time_delta / 2.0;
@@ -119,7 +115,7 @@ void Pendulum::move()
         ks_velocitys[i][1] = x[i];
         ks_thetas[i][1] = pendulum_velocitys[i];
     }
-    // 3つ目の係数を求める
+    // 3つ目の傾きを求める
     for(int i = 0; i < pendulum_num; i++) {
         velocitys[i] =
             pendulum_velocitys[i] + ks_velocitys[i][1] * time_delta / 2.0;
@@ -132,7 +128,7 @@ void Pendulum::move()
         ks_velocitys[i][2] = x[i];
         ks_thetas[i][2] = pendulum_velocitys[i];
     }
-    // 4つ目の係数を求める
+    // 4つ目の傾きを求める
     for(int i = 0; i < pendulum_num; i++) {
         velocitys[i] =
             pendulum_velocitys[i] + ks_velocitys[i][2] * time_delta / 2.0;
@@ -146,6 +142,7 @@ void Pendulum::move()
         ks_thetas[i][3] = pendulum_velocitys[i];
     }
 
+    // 傾きの加重平均をとり, 角速度と角を更新する
     for(int i = 0; i < pendulum_num; i++) {
         pendulum_velocitys[i] =
             pendulum_velocitys[i] +
@@ -157,6 +154,7 @@ void Pendulum::move()
                                   2.0 * ks_thetas[i][2] + ks_thetas[i][3]) *
                                      time_delta / 6.0;
     }
+
     // オイラー法
     // compute_A(A, pendulum_thetas, pendulum_velocitys);
     // compute_b(b, pendulum_thetas, pendulum_velocitys);
@@ -166,6 +164,8 @@ void Pendulum::move()
     //     pendulum_thetas[i] =
     //         pendulum_thetas[i] + pendulum_velocitys[i] * time_delta;
     // }
+
+    // 現在と1単位時間前の直交座標を更新
     pendulum_coords_bfr = pendulum_coords_aft;
     pendulum_coords_aft = compute_coords();
 
@@ -183,7 +183,12 @@ double Pendulum::compute_physical_energy() const
     /* 力学的エネルギーを返す. */
     double potential_energy = 0.0;  // 位置エネルギー
 
-    // 極座標からO(pendulum_num)で計算
+    // 直交座標からO(pendulum_num)で計算
+    for(int i = 0; i < pendulum_num; i++) {
+        potential_energy += -G * pendulum_coords_aft[i].second;
+    }
+
+    // // 極座標からO(pendulum_num)で計算
     // double bfr_y = 0.0;  // 1つ上の振り子のy座標
     // for(int i = 0; i < pendulum_num; i++) {
     //     double aft_y = bfr_y + pendulum_string_length *
@@ -192,23 +197,30 @@ double Pendulum::compute_physical_energy() const
     // }
     // potential_energy = potential_energy * G;
 
-    // 極座標からO(pendulum_num^2)で計算
-    for(int i = 0; i < pendulum_num; i++) {
-        for(int j = 0; j <= i; j++) {
-            potential_energy =
-                potential_energy + cos((PI / 2.0 - pendulum_thetas[j]));
-        }
-    }
-    potential_energy = potential_energy * G * pendulum_string_length;
-
-    // 直交座標からO(pendulum_num)で計算
+    // // 極座標からO(pendulum_num^2)で計算
     // for(int i = 0; i < pendulum_num; i++) {
-    //     potential_energy += G * pendulum_coords_aft[i].second;
+    //     for(int j = 0; j <= i; j++) {
+    //         potential_energy =
+    //             potential_energy + cos((PI / 2.0 - pendulum_thetas[j]));
+    //     }
     // }
+    // potential_energy = potential_energy * G * pendulum_string_length;
 
     double kinetic_energy = 0.0;  // 運動エネルギー
 
-    // 極座標からO(pendulum_num^3)で計算
+    // 直交座標からO(pendulum_num)で計算
+    for(int i = 0; i < pendulum_num; i++) {
+        kinetic_energy +=
+            ((pendulum_coords_aft[i].first - pendulum_coords_bfr[i].first) *
+                 (pendulum_coords_aft[i].first - pendulum_coords_bfr[i].first) +
+             (pendulum_coords_aft[i].second - pendulum_coords_bfr[i].second) *
+                 (pendulum_coords_aft[i].second -
+                  pendulum_coords_bfr[i].second)) /
+            time_delta / time_delta;
+    }
+    kinetic_energy = kinetic_energy / 2.0;
+
+    // 極座標からO(pendulum_num^3)で計算(上手くいかない)
     // for(int i = 0; i < pendulum_num; i++) {
     //     for(int j = 0; j <= i; j++) {
     //         kinetic_energy += pendulum_velocitys[j] * pendulum_velocitys[j];
@@ -224,19 +236,7 @@ double Pendulum::compute_physical_energy() const
     //     pendulum_string_length * pendulum_string_length * kinetic_energy
     //     / 2.0;
 
-    // 直交座標からO(pendulum_num)で計算
-    for(int i = 0; i < pendulum_num; i++) {
-        kinetic_energy +=
-            ((pendulum_coords_aft[i].first - pendulum_coords_bfr[i].first) *
-                 (pendulum_coords_aft[i].first - pendulum_coords_bfr[i].first) +
-             (pendulum_coords_aft[i].second - pendulum_coords_bfr[i].second) *
-                 (pendulum_coords_aft[i].second -
-                  pendulum_coords_bfr[i].second)) /
-            time_delta / time_delta;
-    }
-    kinetic_energy = kinetic_energy / 2.0;
-
-    // 極座標からO(pendulum_num^2)で計算
+    // 極座標からO(pendulum_num^2)で計算(上手くいかない)
     // double test = 0.0;
     // double bfr_v = 0.0;  // 1つ上の振り子の速度
     // for(int i = 0; i < pendulum_num; i++) {
@@ -251,7 +251,7 @@ double Pendulum::compute_physical_energy() const
     //     bfr_v = aft_v;
     // }
 
-    double ret = kinetic_energy - potential_energy;
+    double ret = kinetic_energy + potential_energy;
     // double ret = (kinetic_energy - potential_energy) /
     //  (kinetic_energy + potential_energy);
     // double ret = kinetic_energy / potential_energy;
@@ -261,3 +261,7 @@ double Pendulum::compute_physical_energy() const
 }
 
 int Pendulum::get_pendulum_num() const { return pendulum_num; }
+vector<pair<double, double>> Pendulum::get_pendulum_coords() const
+{
+    return pendulum_coords_aft;
+}
