@@ -2,6 +2,7 @@
 #include <SDL.h>
 
 #include <cmath>
+#include <memory>
 #include <vector>
 
 using namespace std;
@@ -12,8 +13,8 @@ class Figure
 {
 public:
     /* Canvasに描く図形についてのクラス */
-    void draw(SDL_Renderer* renderer, double center_x, double center_y,
-              double scale) const;
+    virtual void draw(SDL_Renderer* renderer, double width, double height,
+                      double center_x, double center_y, double scale) const;
 };
 
 class Circle : public Figure
@@ -25,8 +26,8 @@ private:
     double r;  // 半径
 public:
     Circle(double x, double y, double r);
-    void draw(SDL_Renderer* renderer, double center_x, double center_y,
-              double scale) const;
+    void draw(SDL_Renderer* renderer, double width, double height,
+              double center_x, double center_y, double scale) const;
 };
 
 class Line : public Figure
@@ -41,22 +42,22 @@ private:
 
 public:
     Line(double x1, double y1, double x2, double y2);
-    void draw(SDL_Renderer* renderer, double center_x, double center_y,
-              double scale) const;
+    void draw(SDL_Renderer* renderer, double width, double height,
+              double center_x, double center_y, double scale) const;
 };
 
 class Canvas
 {
     /* Figureを移動・拡大縮小して表示するクラス */
 private:
-    vector<Figure> figures;
+    vector<shared_ptr<Figure>> figures;
     int width;
     int height;
 
 public:
     Canvas(int width, int height);
     void clear();
-    void add_figure(Figure figure);
-    void draw(SDL_Renderer* renderer, double center_x, double center_y,
-              double scale) const;
+    void add_figure(shared_ptr<Figure> figure_ptr);
+    void draw(SDL_Renderer* renderer, double width, double height,
+              double center_x, double center_y, double scale) const;
 };

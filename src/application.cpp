@@ -101,7 +101,7 @@ void Application::run()
 
     while(!quit) {
         Canvas canvas(screen_width, screen_height);
-        canvas.add_figure(Line(100, 200, 400, 500));
+        canvas.add_figure(make_shared<Line>(0, 0, 100, 200));
 
         // pendulum.move();
         // if(cnt++ % 100 != 0) {
@@ -115,7 +115,8 @@ void Application::run()
         // // 振り子の更新
         SDL_SetRenderDrawColor(screen_renderer, 255, 255, 255,
                                SDL_ALPHA_OPAQUE);
-        canvas.draw(screen_renderer, 0.0, 0.0, 1.0);
+        canvas.draw(screen_renderer, screen_width, screen_height, 0.0, 0.0,
+                    0.5);
 
         // render_pendulum(screen_renderer, pendulum, (double)(screen_width
         // / 2),
