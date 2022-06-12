@@ -20,8 +20,10 @@ private:
     vector<pair<double, double>> pendulum_coords_bfr;
     vector<pair<double, double>> pendulum_coords_aft;
 
-    void compute_A(double** A) const;
-    void compute_b(double* b) const;
+    void compute_A(double** A, const vector<double>& pendulum_thetas,
+                   const vector<double>& pendulum_velocitys) const;
+    void compute_b(double* b, const vector<double>& pendulum_thetas,
+                   const vector<double>& pendulum_velocitys) const;
 
 public:
     static const double PI;

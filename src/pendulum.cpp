@@ -12,7 +12,7 @@ using namespace std;
 */
 const double Pendulum::PI = 3.1415926535;
 const double Pendulum::G = 4.0;
-const double Pendulum::time_delta = 0.01;
+const double Pendulum::time_delta = 0.001;
 Pendulum::Pendulum(int pendulum_num, double pendulum_string_length)
     : pendulum_num(pendulum_num), pendulum_string_length(pendulum_string_length)
 {
@@ -39,7 +39,8 @@ vector<pair<double, double>> Pendulum::compute_coords() const
     return ret;
 }
 
-void Pendulum::compute_A(double** A) const
+void Pendulum::compute_A(double** A, const vector<double>& pendulum_thetas,
+                         const vector<double>& pendulum_velocitys) const
 {
     /* thetaの2回微分についての方程式の係数行列をAに格納する. */
     for(int i = 0; i < pendulum_num; i++) {
@@ -53,7 +54,8 @@ void Pendulum::compute_A(double** A) const
     return;
 }
 
-void Pendulum::compute_b(double* b) const
+void Pendulum::compute_b(double* b, const vector<double>& pendulum_thetas,
+                         const vector<double>& pendulum_velocitys) const
 {
     for(int i = 0; i < pendulum_num; i++) {
         b[i] = 0.0;
@@ -77,22 +79,99 @@ void Pendulum::compute_b(double* b) const
 void Pendulum::move()
 {
     /* 振り子を1単位時間動かす. */
+    // メモリの確保
     double** A = (double**)malloc(sizeof(double*) * pendulum_num);
     double* b = (double*)malloc(sizeof(double) * pendulum_num);
     double* x = (double*)malloc(sizeof(double) * pendulum_num);
     for(int i = 0; i < pendulum_num; i++) {
         A[i] = (double*)malloc(sizeof(double) * pendulum_num);
     }
-    compute_A(A);
-    compute_b(b);
+
+    // 4次のルンゲ・クッタ法により計算する
+    vector<vector<double>> ks_thetas(
+        pendulum_num, vector<double>(4));  // ルンゲ・クッタ法の係数
+    vector<vector<double>> ks_velocitys(
+        pendulum_num, vector<double>(4));  // ルンゲ・クッタ法の係数
+    // 1つ目の係数を求める
+    vector<double> velocitys = pendulum_velocitys;
+    vector<double> thetas = pendulum_thetas;
+    compute_A(A, thetas, velocitys);
+    compute_b(b, thetas, velocitys);
     gauss_elimination(A, b, x, pendulum_num);
     for(int i = 0; i < pendulum_num; i++) {
-        pendulum_velocitys[i] = pendulum_velocitys[i] + x[i] * time_delta;
-        pendulum_thetas[i] =
-            pendulum_thetas[i] + pendulum_velocitys[i] * time_delta;
+        ks_velocitys[i][0] = x[i];
+        ks_thetas[i][0] = pendulum_velocitys[i];
     }
+    // 2つ目の係数を求める
+    for(int i = 0; i < pendulum_num; i++) {
+        velocitys[i] =
+            pendulum_velocitys[i] + ks_velocitys[i][0] * time_delta / 2.0;
+        thetas[i] = pendulum_thetas[i] + ks_thetas[i][0] * time_delta / 2.0;
+    }
+    compute_A(A, thetas, velocitys);
+    compute_b(b, thetas, velocitys);
+    gauss_elimination(A, b, x, pendulum_num);
+    for(int i = 0; i < pendulum_num; i++) {
+        ks_velocitys[i][1] = x[i];
+        ks_thetas[i][1] = pendulum_velocitys[i];
+    }
+    // 3つ目の係数を求める
+    for(int i = 0; i < pendulum_num; i++) {
+        velocitys[i] =
+            pendulum_velocitys[i] + ks_velocitys[i][1] * time_delta / 2.0;
+        thetas[i] = pendulum_thetas[i] + ks_thetas[i][1] * time_delta / 2.0;
+    }
+    compute_A(A, thetas, velocitys);
+    compute_b(b, thetas, velocitys);
+    gauss_elimination(A, b, x, pendulum_num);
+    for(int i = 0; i < pendulum_num; i++) {
+        ks_velocitys[i][2] = x[i];
+        ks_thetas[i][2] = pendulum_velocitys[i];
+    }
+    // 4つ目の係数を求める
+    for(int i = 0; i < pendulum_num; i++) {
+        velocitys[i] =
+            pendulum_velocitys[i] + ks_velocitys[i][2] * time_delta / 2.0;
+        thetas[i] = pendulum_thetas[i] + ks_thetas[i][2] * time_delta / 2.0;
+    }
+    compute_A(A, thetas, velocitys);
+    compute_b(b, thetas, velocitys);
+    gauss_elimination(A, b, x, pendulum_num);
+    for(int i = 0; i < pendulum_num; i++) {
+        ks_velocitys[i][3] = x[i];
+        ks_thetas[i][3] = pendulum_velocitys[i];
+    }
+
+    for(int i = 0; i < pendulum_num; i++) {
+        pendulum_velocitys[i] =
+            pendulum_velocitys[i] +
+            (ks_velocitys[i][0] + 2.0 * ks_velocitys[i][1] +
+             2.0 * ks_velocitys[i][2] + ks_velocitys[i][3]) *
+                time_delta / 6.0;
+        pendulum_thetas[i] =
+            pendulum_thetas[i] + (ks_thetas[i][0] + 2.0 * ks_thetas[i][1] +
+                                  2.0 * ks_thetas[i][2] + ks_thetas[i][3]) *
+                                     time_delta / 6.0;
+    }
+    // オイラー法
+    // compute_A(A, pendulum_thetas, pendulum_velocitys);
+    // compute_b(b, pendulum_thetas, pendulum_velocitys);
+    // gauss_elimination(A, b, x, pendulum_num);
+    // for(int i = 0; i < pendulum_num; i++) {
+    //     pendulum_velocitys[i] = pendulum_velocitys[i] + x[i] * time_delta;
+    //     pendulum_thetas[i] =
+    //         pendulum_thetas[i] + pendulum_velocitys[i] * time_delta;
+    // }
     pendulum_coords_bfr = pendulum_coords_aft;
     pendulum_coords_aft = compute_coords();
+
+    // メモリの解放
+    for(int i = 0; i < pendulum_num; i++) {
+        free(A[i]);
+    }
+    free(A);
+    free(b);
+    free(x);
 }
 
 double Pendulum::compute_physical_energy() const
@@ -106,45 +185,45 @@ double Pendulum::compute_physical_energy() const
     //     bfr_y = aft_y;
     // }
     // potential_energy = potential_energy * G;
-    for(int i = 0; i < pendulum_num; i++) {
-        for(int j = 0; j <= i; j++) {
-            potential_energy =
-                potential_energy + cos((PI / 2.0 - pendulum_thetas[j]));
-        }
-    }
-    potential_energy = potential_energy * G * pendulum_string_length;
-
     // for(int i = 0; i < pendulum_num; i++) {
-    //     potential_energy += G * pendulum_coords_aft[i].second;
+    //     for(int j = 0; j <= i; j++) {
+    //         potential_energy =
+    //             potential_energy + cos((PI / 2.0 - pendulum_thetas[j]));
+    //     }
     // }
+    // potential_energy = potential_energy * G * pendulum_string_length;
+
+    for(int i = 0; i < pendulum_num; i++) {
+        potential_energy += G * pendulum_coords_aft[i].second;
+    }
 
     double kinetic_energy = 0.0;  // 運動エネルギー
 
-    for(int i = 0; i < pendulum_num; i++) {
-        for(int j = 0; j <= i; j++) {
-            kinetic_energy += pendulum_velocitys[j] * pendulum_velocitys[j];
-            for(int k = j + 1; k <= i; k++) {
-                kinetic_energy += 2 * pendulum_velocitys[j] *
-                                  pendulum_velocitys[k] *
-                                  cos(pendulum_thetas[j] - pendulum_thetas[i]);
-            }
-        }
-    }
-    kinetic_energy =
-        pendulum_string_length * pendulum_string_length * kinetic_energy / 2.0;
-
     // for(int i = 0; i < pendulum_num; i++) {
-    //     kinetic_energy +=
-    //         ((pendulum_coords_aft[i].first - pendulum_coords_bfr[i].first) *
-    //              (pendulum_coords_aft[i].first -
-    //              pendulum_coords_bfr[i].first) +
-    //          (pendulum_coords_aft[i].second - pendulum_coords_bfr[i].second)
-    //          *
-    //              (pendulum_coords_aft[i].second -
-    //               pendulum_coords_bfr[i].second)) /
-    //         time_delta / time_delta;
+    //     for(int j = 0; j <= i; j++) {
+    //         kinetic_energy += pendulum_velocitys[j] * pendulum_velocitys[j];
+    //         for(int k = j + 1; k <= i; k++) {
+    //             kinetic_energy += 2 * pendulum_velocitys[j] *
+    //                               pendulum_velocitys[k] *
+    //                               cos(pendulum_thetas[j] -
+    //                               pendulum_thetas[i]);
+    //         }
+    //     }
     // }
-    // kinetic_energy = kinetic_energy / 2.0;
+    // kinetic_energy =
+    //     pendulum_string_length * pendulum_string_length * kinetic_energy
+    //     / 2.0;
+
+    for(int i = 0; i < pendulum_num; i++) {
+        kinetic_energy +=
+            ((pendulum_coords_aft[i].first - pendulum_coords_bfr[i].first) *
+                 (pendulum_coords_aft[i].first - pendulum_coords_bfr[i].first) +
+             (pendulum_coords_aft[i].second - pendulum_coords_bfr[i].second) *
+                 (pendulum_coords_aft[i].second -
+                  pendulum_coords_bfr[i].second)) /
+            time_delta / time_delta;
+    }
+    kinetic_energy = kinetic_energy / 2.0;
 
     // double test = 0.0;
     // double bfr_v = 0.0;  // 1つ上の振り子の速度
@@ -160,10 +239,10 @@ double Pendulum::compute_physical_energy() const
     //     bfr_v = aft_v;
     // }
 
-    double ret = kinetic_energy - potential_energy;
+    // double ret = kinetic_energy - potential_energy;
     // double ret = (kinetic_energy - potential_energy) /
     //  (kinetic_energy + potential_energy);
-    // double ret = kinetic_energy / potential_energy;
+    double ret = kinetic_energy / potential_energy;
     // double ret = kinetic_energy;
     // double ret = potential_energy;
     return ret;
