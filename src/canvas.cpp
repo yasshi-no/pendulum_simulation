@@ -7,7 +7,7 @@ using namespace std;
 void render_circle(SDL_Renderer* renderer, double x, double y, double r)
 {
     /* 円を描画する */
-    for(int i = -(int)r; i < (int)r; i++) {
+    for(int i = -(int)r; i <= (int)r; i++) {
         double half_span = sqrt(r * r - i * i);
         SDL_RenderDrawLine(renderer, x + i, y - half_span, x + i,
                            y + half_span);

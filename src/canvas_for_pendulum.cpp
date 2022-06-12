@@ -29,8 +29,7 @@ void PendulumFigure::draw(SDL_Renderer *renderer, double width, double height,
     // 振り子の描画
     for(int i = 0; i < pendulum_num; i++) {
         // Circleインスタンスの生成.
-        // 半径はscaleに関わらず描画されるように修正する.
-        Circle circle(coords[i].first, coords[i].second, r * scale);
+        Circle circle(coords[i].first, coords[i].second, r);
         circle.draw(renderer, width, height, center_x, center_y, scale);
     }
     return;
