@@ -62,12 +62,10 @@ void Application::run()
     bool quit = false;  // メインループを終了するか否か
     SDL_Event event;
     int cnt = 0;
-    double scale = 1.0;
     double scale_change_rate = 1.1;
-    double center_x = 0.0;
-    double center_y = 0.0;
     int mouse_bfr_x = -1;
     int mouse_bfr_y = -1;
+    Canvas canvas(screen_width, screen_height);
 
     while(!quit) {
         pendulum.move();
@@ -82,12 +80,11 @@ void Application::run()
         // 振り子の更新
         SDL_SetRenderDrawColor(screen_renderer, 255, 255, 255,
                                SDL_ALPHA_OPAQUE);
-        Canvas canvas(screen_width, screen_height);
+        canvas.clear();
         canvas.add_figure(
             make_shared<PendulumFigure>(pendulum.compute_coords(), 5.0));
         // canvasの描画
-        canvas.draw(screen_renderer, screen_width, screen_height, center_x,
-                    center_y, scale);
+        canvas.draw(screen_renderer);
         // 画面の更新
         SDL_RenderPresent(screen_renderer);
 
@@ -100,9 +97,9 @@ void Application::run()
                 case SDL_MOUSEWHEEL:
                     // 拡大縮小
                     if(event.wheel.y > 0) {
-                        scale /= scale_change_rate;
+                        canvas.modify_scale(1 / scale_change_rate);
                     } else if(event.wheel.y < 0) {
-                        scale *= scale_change_rate;
+                        canvas.modify_scale(scale_change_rate);
                     }
                 case SDL_MOUSEBUTTONDOWN:
                     // 移動の開始位置を記録
@@ -124,8 +121,7 @@ void Application::run()
             // 前回からの移動分を-scale倍して動かす
             int dx = mouse_aft_x - mouse_bfr_x;
             int dy = mouse_aft_y - mouse_bfr_y;
-            center_x = center_x - (double)dx * scale;
-            center_y = center_y - (double)dy * scale;
+            canvas.move_center(dx, dy);
 
             mouse_bfr_x = mouse_aft_x;
             mouse_bfr_y = mouse_aft_y;

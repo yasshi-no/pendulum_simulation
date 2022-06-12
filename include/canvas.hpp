@@ -53,11 +53,15 @@ private:
     vector<shared_ptr<Figure>> figures;
     int width;
     int height;
+    double center_x;
+    double center_y;
+    double scale;
 
 public:
     Canvas(int width, int height);
     void clear();
     void add_figure(shared_ptr<Figure> figure_ptr);
-    void draw(SDL_Renderer* renderer, double width, double height,
-              double center_x, double center_y, double scale) const;
+    void move_center(double dx, double dy);
+    void modify_scale(double change_rate);
+    void draw(SDL_Renderer* renderer) const;
 };

@@ -70,7 +70,8 @@ void Line::draw(SDL_Renderer* renderer, double width, double height,
 }
 
 /* Canvasクラス */
-Canvas::Canvas(int width, int height) : width(width), height(height)
+Canvas::Canvas(int width, int height)
+    : width(width), height(height), center_x(0.0), center_y(0.0), scale(1.0)
 {
     figures = vector<shared_ptr<Figure>>();  // Figureオブジェクトを格納する配列
 }
@@ -86,8 +87,21 @@ void Canvas::add_figure(shared_ptr<Figure> figure_ptr)
     figures.push_back(figure_ptr);
     return;
 };
-void Canvas::draw(SDL_Renderer* renderer, double width, double height,
-                  double center_x, double center_y, double scale) const
+
+void Canvas::move_center(double dx, double dy)
+{ /* 描画の中心を移動する.引数は実際の描画の座標. */
+    center_x = center_x - dx * scale;
+    center_y = center_y - dy * scale;
+    return;
+}
+void Canvas::modify_scale(double change_rate)
+{
+    /* 描画の縮尺を変更する. */
+    scale = scale * change_rate;
+    return;
+}
+
+void Canvas::draw(SDL_Renderer* renderer) const
 {
     /* Figureオブジェクトの位置を修正して描画する. */
     for(shared_ptr<Figure> figure_ptr : figures) {
