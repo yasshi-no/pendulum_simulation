@@ -13,6 +13,11 @@ class Pendulum
 private:
     int pendulum_num;                        // 振り子の数
     vector<double> pendulum_string_lengths;  // 振り子の糸の長さ
+    vector<double> pendulum_masss;           // 振り子の質量
+public:
+    vector<double>
+        pendulum_masss_acmsum;  // 振り子の質量の累積和(質量のインデックスは1つ大きくずらす)
+private:
     static const double time_delta;  // 1度の計算で経過する時間
     vector<double>
         pendulum_thetas;  // それぞれの振り子の中心とx軸の正の向きとの成す角
@@ -30,7 +35,8 @@ public:
     static const double G;
 
     Pendulum(int pendulum_num, vector<double> pendulum_string_lengths,
-             vector<double> pendulum_thetas, vector<double> pendulum_velocitys);
+             vector<double> pendulum_masss, vector<double> pendulum_thetas,
+             vector<double> pendulum_velocitys);
     vector<pair<double, double>> compute_coords() const;
     double compute_physical_energy() const;
     void move();

@@ -100,16 +100,19 @@ void render_pendulum(SDL_Renderer* renderer, const Pendulum& pendulum, double x,
 int main(int argc, char* argv[])
 {
     // 振り子の生成
-    double pendulum_num = 10;
+    double pendulum_num = 3;
     vector<double> pendulum_string_lengths(pendulum_num, 20.0);
     for(int i = 0; i < pendulum_num; i++) {
         pendulum_string_lengths[i] = 20.0 + 10.0 * (double)(i % 2);
     }
+    vector<double> pendulum_masss(pendulum_num, 1.0);
+    pendulum_masss[pendulum_num - 1] = 10.0;
     vector<double> pendulum_thetas(pendulum_num, 0.0);
     vector<double> pendulum_velocitys(pendulum_num, 0.01);
-    Pendulum pendulum(pendulum_num, pendulum_string_lengths, pendulum_thetas,
-                      pendulum_velocitys);
+    Pendulum pendulum(pendulum_num, pendulum_string_lengths, pendulum_masss,
+                      pendulum_thetas, pendulum_velocitys);
 
+    SDL_Log("%d size\n", pendulum.pendulum_masss_acmsum.size());
     // SDLを初期化する
     if(!init()) {
         return 1;
@@ -117,9 +120,13 @@ int main(int argc, char* argv[])
 
     bool quit = false;  // メインループを終了するか否か
     SDL_Event event;
+    int cnt = 0;
 
     while(!quit) {
         pendulum.move();
+        if(cnt++ % 10 != 0) {
+            continue;
+        }
         // rendererを更新する
         SDL_RenderClear(screen_renderer);
         // 背景の更新

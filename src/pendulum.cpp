@@ -12,17 +12,28 @@ using namespace std;
 */
 const double Pendulum::PI = 3.1415926535;
 const double Pendulum::G = 4.0;
-const double Pendulum::time_delta = 0.001;
+const double Pendulum::time_delta = 0.0001;
 Pendulum::Pendulum(int pendulum_num, vector<double> pendulum_string_lengths,
+                   vector<double> pendulum_masss,
                    vector<double> pendulum_thetas,
                    vector<double> pendulum_velocitys)
     : pendulum_num(pendulum_num),
       pendulum_string_lengths(pendulum_string_lengths),
+      pendulum_masss(pendulum_masss),
       pendulum_thetas(pendulum_thetas),
       pendulum_velocitys(pendulum_velocitys)
 {
-    pendulum_coords_bfr = compute_coords();
-    pendulum_coords_aft = pendulum_coords_bfr;
+    // 質量の累積和の生成
+    pendulum_masss_acmsum = vector<double>(pendulum_num + 1);
+    pendulum_masss_acmsum[0] = 0.0;
+    for(int i = 0; i < pendulum_num; i++) {
+        pendulum_masss_acmsum[i + 1] =
+            pendulum_masss_acmsum[i] + pendulum_masss[i];
+    }
+
+    // 座標の初期化
+    // pendulum_coords_bfr = compute_coords();
+    pendulum_coords_aft = compute_coords();
 }
 
 vector<pair<double, double>> Pendulum::compute_coords() const
@@ -44,7 +55,8 @@ void Pendulum::compute_A(double** A, const vector<double>& pendulum_thetas,
     /* thetaの2回微分についての方程式の係数行列をAに格納する. */
     for(int i = 0; i < pendulum_num; i++) {
         for(int j = 0; j < pendulum_num; j++) {
-            A[i][j] = (double)(pendulum_num - (double)max(i, j)) *
+            A[i][j] = (pendulum_masss_acmsum[pendulum_num] -
+                       pendulum_masss_acmsum[max(i, j)]) *
                       pendulum_string_lengths[j] *
                       cos((PI / 2.0 - pendulum_thetas[i]) -
                           (PI / 2.0 - pendulum_thetas[j]));
@@ -61,10 +73,12 @@ void Pendulum::compute_b(double* b, const vector<double>& pendulum_thetas,
         b[i] = 0.0;
         for(int j = 0; j < pendulum_num; j++) {
             if(i == j) {
-                b[i] = b[i] + (pendulum_num - i) * G *
-                                  sin(PI / 2.0 - pendulum_thetas[i]);
+                b[i] = b[i] + (pendulum_masss_acmsum[pendulum_num] -
+                               pendulum_masss_acmsum[i]) *
+                                  G * sin(PI / 2.0 - pendulum_thetas[i]);
             } else {
-                b[i] = b[i] + (double)(pendulum_num - max(i, j)) *
+                b[i] = b[i] + (pendulum_masss_acmsum[pendulum_num] -
+                               pendulum_masss_acmsum[max(i, j)]) *
                                   pendulum_string_lengths[j] *
                                   pendulum_velocitys[j] *
                                   pendulum_velocitys[j] *
@@ -185,7 +199,8 @@ double Pendulum::compute_physical_energy() const
 
     // 直交座標からO(pendulum_num)で計算
     for(int i = 0; i < pendulum_num; i++) {
-        potential_energy += -G * pendulum_coords_aft[i].second;
+        potential_energy +=
+            -pendulum_masss[i] * G * pendulum_coords_aft[i].second;
     }
 
     // // 極座標からO(pendulum_num)で計算
@@ -215,8 +230,8 @@ double Pendulum::compute_physical_energy() const
                  (pendulum_coords_aft[i].first - pendulum_coords_bfr[i].first) +
              (pendulum_coords_aft[i].second - pendulum_coords_bfr[i].second) *
                  (pendulum_coords_aft[i].second -
-                  pendulum_coords_bfr[i].second)) /
-            time_delta / time_delta;
+                  pendulum_coords_bfr[i].second)) *
+            pendulum_masss[i] / time_delta / time_delta;
     }
     kinetic_energy = kinetic_energy / 2.0;
 
