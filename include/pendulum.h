@@ -17,6 +17,8 @@ private:
     vector<double>
         pendulum_thetas;  // それぞれの振り子の中心とx軸の正の向きとの成す角
     vector<double> pendulum_velocitys;  // 角速度
+    vector<pair<double, double>> pendulum_coords_bfr;
+    vector<pair<double, double>> pendulum_coords_aft;
 
     void compute_A(double** A) const;
     void compute_b(double* b) const;
@@ -27,6 +29,7 @@ public:
 
     Pendulum(int pendulum_num, double pendulum_string_length);
     vector<pair<double, double>> compute_coords() const;
+    double compute_physical_energy() const;
     int get_pendulum_num() const;
     void move();
 };

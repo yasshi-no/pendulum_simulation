@@ -99,7 +99,7 @@ void render_pendulum(SDL_Renderer* renderer, const Pendulum& pendulum, double x,
 
 int main(int argc, char* argv[])
 {
-    Pendulum pendulum(20, 20.0);
+    Pendulum pendulum(10, 20.0);
 
     // SDLを初期化する
     if(!init()) {
@@ -128,7 +128,8 @@ int main(int argc, char* argv[])
                 quit = true;
             }
         }
-        SDL_Delay(1);
+        SDL_Log("%f\n", pendulum.compute_physical_energy());
+        // SDL_Delay(1);
     }
     close();
 
