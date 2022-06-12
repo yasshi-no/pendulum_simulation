@@ -21,6 +21,7 @@ target_link_libraries(pendulum_simulator PUBLIC
     ${SDL2_LIBRARIES}
     pendulum
     gauss_elimination
+    application
 )
 
 # コンパイルオプション
