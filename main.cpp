@@ -101,10 +101,13 @@ int main(int argc, char* argv[])
 {
     // 振り子の生成
     double pendulum_num = 10;
-    double pendulum_string_length = 20.0;
-    vector<double> pendulum_thetas = vector<double>(pendulum_num, 0.0);
-    vector<double> pendulum_velocitys = vector<double>(pendulum_num, 0.01);
-    Pendulum pendulum(pendulum_num, pendulum_string_length, pendulum_thetas,
+    vector<double> pendulum_string_lengths(pendulum_num, 20.0);
+    for(int i = 0; i < pendulum_num; i++) {
+        pendulum_string_lengths[i] = 20.0 + 10.0 * (double)(i % 2);
+    }
+    vector<double> pendulum_thetas(pendulum_num, 0.0);
+    vector<double> pendulum_velocitys(pendulum_num, 0.01);
+    Pendulum pendulum(pendulum_num, pendulum_string_lengths, pendulum_thetas,
                       pendulum_velocitys);
 
     // SDLを初期化する

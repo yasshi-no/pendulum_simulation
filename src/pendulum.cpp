@@ -12,12 +12,12 @@ using namespace std;
 */
 const double Pendulum::PI = 3.1415926535;
 const double Pendulum::G = 4.0;
-const double Pendulum::time_delta = 0.0001;
-Pendulum::Pendulum(int pendulum_num, double pendulum_string_length,
+const double Pendulum::time_delta = 0.001;
+Pendulum::Pendulum(int pendulum_num, vector<double> pendulum_string_lengths,
                    vector<double> pendulum_thetas,
                    vector<double> pendulum_velocitys)
     : pendulum_num(pendulum_num),
-      pendulum_string_length(pendulum_string_length),
+      pendulum_string_lengths(pendulum_string_lengths),
       pendulum_thetas(pendulum_thetas),
       pendulum_velocitys(pendulum_velocitys)
 {
@@ -31,8 +31,8 @@ vector<pair<double, double>> Pendulum::compute_coords() const
     vector<pair<double, double>> ret(pendulum_num);
     double now_x = 0.0, now_y = 0.0;  // 1つ上の振り子の座標
     for(int i = 0; i < pendulum_num; i++) {
-        now_x = now_x + pendulum_string_length * cos(pendulum_thetas[i]);
-        now_y = now_y + pendulum_string_length * sin(pendulum_thetas[i]);
+        now_x = now_x + pendulum_string_lengths[i] * cos(pendulum_thetas[i]);
+        now_y = now_y + pendulum_string_lengths[i] * sin(pendulum_thetas[i]);
         ret[i] = {now_x, now_y};
     }
     return ret;
@@ -45,7 +45,7 @@ void Pendulum::compute_A(double** A, const vector<double>& pendulum_thetas,
     for(int i = 0; i < pendulum_num; i++) {
         for(int j = 0; j < pendulum_num; j++) {
             A[i][j] = (double)(pendulum_num - (double)max(i, j)) *
-                      pendulum_string_length *
+                      pendulum_string_lengths[j] *
                       cos((PI / 2.0 - pendulum_thetas[i]) -
                           (PI / 2.0 - pendulum_thetas[j]));
         }
@@ -65,7 +65,7 @@ void Pendulum::compute_b(double* b, const vector<double>& pendulum_thetas,
                                   sin(PI / 2.0 - pendulum_thetas[i]);
             } else {
                 b[i] = b[i] + (double)(pendulum_num - max(i, j)) *
-                                  pendulum_string_length *
+                                  pendulum_string_lengths[j] *
                                   pendulum_velocitys[j] *
                                   pendulum_velocitys[j] *
                                   sin((PI / 2.0 - pendulum_thetas[i]) -
