@@ -12,6 +12,7 @@ class Pendulum
 {
 private:
     int pendulum_num;               // 振り子の数
+    double time;                    // 時間
     vector<double> string_lengths;  // 振り子の糸の長さ
     vector<double> masss;           // 振り子の質量
 public:
@@ -37,8 +38,11 @@ public:
              vector<double> masss, vector<double> thetas,
              vector<double> velocitys);
     vector<pair<double, double>> compute_coords() const;
+    double compute_potential_energy() const;
+    double compute_kinetic_energy() const;
     double compute_physical_energy() const;
     void move();
     int get_pendulum_num() const;
+    double get_time() const;
     vector<pair<double, double>> get_coords() const;
 };

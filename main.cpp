@@ -141,7 +141,11 @@ int main(int argc, char* argv[])
                 quit = true;
             }
         }
-        SDL_Log("%f\n", pendulum.compute_physical_energy());
+        double potential_energy = pendulum.compute_potential_energy();
+        double kinetic_energy = pendulum.compute_kinetic_energy();
+        SDL_Log("time=%f U=%f K=%f E=%f\n", pendulum.get_time(),
+                potential_energy, kinetic_energy,
+                potential_energy + kinetic_energy);
         // SDL_Delay(1);
     }
     close();
