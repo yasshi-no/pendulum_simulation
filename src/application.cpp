@@ -62,6 +62,8 @@ void Application::run()
     bool quit = false;  // メインループを終了するか否か
     SDL_Event event;
     int cnt = 0;
+    double scale = 1.0;
+    double scale_change_rate = 1.1;
 
     while(!quit) {
         pendulum.move();
@@ -81,23 +83,35 @@ void Application::run()
             make_shared<PendulumFigure>(pendulum.compute_coords(), 5.0));
         // canvasの描画
         canvas.draw(screen_renderer, screen_width, screen_height, 0.0, 0.0,
-                    1.0);
+                    scale);
         // 画面の更新
         SDL_RenderPresent(screen_renderer);
 
         // イベントの処理
         while(SDL_PollEvent(&event) != 0) {
-            if(event.type == SDL_QUIT) {
-                quit = true;
+            switch(event.type) {
+                case SDL_QUIT:
+                    quit = true;
+                    break;
+                case SDL_MOUSEWHEEL:
+                    SDL_Log("%d %d\n", event.wheel.x, event.wheel.y);
+                    if(event.wheel.y > 0) {
+                        scale /= scale_change_rate;
+                    } else if(event.wheel.y < 0) {
+                        scale *= scale_change_rate;
+                    }
+                    break;
+                default:
+                    break;
             }
         }
 
         // エネルギー保存の確認
         double potential_energy = pendulum.compute_potential_energy();
         double kinetic_energy = pendulum.compute_kinetic_energy();
-        SDL_Log("time=%f U=%f K=%f E=%f\n", pendulum.get_time(),
-                potential_energy, kinetic_energy,
-                potential_energy + kinetic_energy);
+        // SDL_Log("time=%f U=%f K=%f E=%f\n", pendulum.get_time(),
+        //         potential_energy, kinetic_energy,
+        //         potential_energy + kinetic_energy);
         // SDL_Delay(1);
     }
     close();
