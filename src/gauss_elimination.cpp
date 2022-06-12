@@ -1,6 +1,5 @@
-#include <gauss_elimination.h>
-
 #include <cmath>
+#include <gauss_elimination.hpp>
 
 using namespace std;
 

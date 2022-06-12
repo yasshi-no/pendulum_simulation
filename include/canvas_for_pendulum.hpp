@@ -1,5 +1,6 @@
-#include <canvas.h>
-#include <pendulum.h>
+#pragma once
+#include <canvas.hpp>
+#include <pendulum.hpp>
 
 class PendulumFigure : public Figure
 {

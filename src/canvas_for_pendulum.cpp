@@ -1,6 +1,5 @@
-#include <canvas.h>
-#include <canvas_for_pendulum.h>
-
+#include <canvas.hpp>
+#include <canvas_for_pendulum.hpp>
 #include <vector>
 
 /* PendulumFigureクラス */

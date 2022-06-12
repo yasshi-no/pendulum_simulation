@@ -1,7 +1,6 @@
-#include <gauss_elimination.h>
-#include <pendulum.h>
-
 #include <cmath>
+#include <gauss_elimination.hpp>
+#include <pendulum.hpp>
 #include <vector>
 using namespace std;
 

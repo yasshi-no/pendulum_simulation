@@ -1,6 +1,6 @@
 #include <SDL.h>
-#include <canvas.h>
 
+#include <canvas.hpp>
 #include <vector>
 using namespace std;
 

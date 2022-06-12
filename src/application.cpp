@@ -1,11 +1,11 @@
 #include <SDL.h>
-#include <application.h>
-#include <canvas.h>
-#include <canvas_for_pendulum.h>
-#include <pendulum.h>
 
+#include <application.hpp>
+#include <canvas.hpp>
+#include <canvas_for_pendulum.hpp>
 #include <cmath>
 #include <iostream>
+#include <pendulum.hpp>
 #include <vector>
 
 using namespace std;

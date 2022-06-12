@@ -1,9 +1,9 @@
 #include <SDL.h>
-#include <application.h>
-#include <pendulum.h>
 
+#include <application.hpp>
 #include <cmath>
 #include <iostream>
+#include <pendulum.hpp>
 #include <vector>
 
 using namespace std;

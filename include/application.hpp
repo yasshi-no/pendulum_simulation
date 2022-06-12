@@ -1,8 +1,9 @@
 #pragma once
 
 #include <SDL.h>
-#include <canvas.h>
-#include <pendulum.h>
+
+#include <canvas.hpp>
+#include <pendulum.hpp>
 
 class Application
 {
