@@ -78,20 +78,18 @@ void render_pendulum(SDL_Renderer* renderer, const Pendulum& pendulum, double x,
                      double y, double r)
 {
     /* 振り子を描画する. */
-    vector<pair<double, double>> pendulum_coords =
-        pendulum.get_pendulum_coords();
+    vector<pair<double, double>> coords = pendulum.get_coords();
     int bfr_x = 0.0, bfr_y = 0.0;
     for(int i = 0; i < pendulum.get_pendulum_num(); i++) {
-        int aft_x = (int)pendulum_coords[i].first;
-        int aft_y = (int)pendulum_coords[i].second;
+        int aft_x = (int)coords[i].first;
+        int aft_y = (int)coords[i].second;
         SDL_RenderDrawLine(renderer, bfr_x + (int)x, bfr_y + (int)y,
                            aft_x + (int)x, aft_y + (int)y);
         bfr_x = aft_x;
         bfr_y = aft_y;
     }
     for(int i = 0; i < pendulum.get_pendulum_num(); i++) {
-        render_circle(renderer, pendulum_coords[i].first + x,
-                      pendulum_coords[i].second + y, r);
+        render_circle(renderer, coords[i].first + x, coords[i].second + y, r);
     }
 
     return;
@@ -101,18 +99,16 @@ int main(int argc, char* argv[])
 {
     // 振り子の生成
     double pendulum_num = 3;
-    vector<double> pendulum_string_lengths(pendulum_num, 20.0);
+    vector<double> string_lengths(pendulum_num, 20.0);
     for(int i = 0; i < pendulum_num; i++) {
-        pendulum_string_lengths[i] = 20.0 + 10.0 * (double)(i % 2);
+        string_lengths[i] = 20.0 + 10.0 * (double)(i % 2);
     }
-    vector<double> pendulum_masss(pendulum_num, 1.0);
-    pendulum_masss[pendulum_num - 1] = 10.0;
-    vector<double> pendulum_thetas(pendulum_num, 0.0);
-    vector<double> pendulum_velocitys(pendulum_num, 0.01);
-    Pendulum pendulum(pendulum_num, pendulum_string_lengths, pendulum_masss,
-                      pendulum_thetas, pendulum_velocitys);
+    vector<double> masss(pendulum_num, 1.0);
+    masss[pendulum_num - 1] = 10.0;
+    vector<double> thetas(pendulum_num, 0.0);
+    vector<double> velocitys(pendulum_num, 0.01);
+    Pendulum pendulum(pendulum_num, string_lengths, masss, thetas, velocitys);
 
-    SDL_Log("%d size\n", pendulum.pendulum_masss_acmsum.size());
     // SDLを初期化する
     if(!init()) {
         return 1;
