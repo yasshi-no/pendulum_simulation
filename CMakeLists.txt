@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.0)
-project(pendulum_simulator CXX)
+project(pendulum_simulation CXX)
 
 # SDL2の読み込み
 include(C:\\dev_lib\\SDL2-2.0.16-86-mingw\\lib\\cmake\\SDL2\\sdl2-config.cmake) # SDL2の修正したcmakeを読み込む. SDL2に関わる変数が読み込まれる.
@@ -10,14 +10,14 @@ message(STATUS SDL2_LIBRARIES:${SDL2_LIBRARIES})
 add_subdirectory(src)
 
 # 実行ファイルの追加, インクルード, リンク
-add_executable(pendulum_simulator main.cpp)
-target_include_directories(pendulum_simulator PUBLIC
+add_executable(pendulum_simulation main.cpp)
+target_include_directories(pendulum_simulation PUBLIC
 ${SDL2_INCLUDE_DIRS}
 )
-target_link_directories(pendulum_simulator PUBLIC
+target_link_directories(pendulum_simulation PUBLIC
 ${SDL2_LIBDIR}
 )
-target_link_libraries(pendulum_simulator PUBLIC
+target_link_libraries(pendulum_simulation PUBLIC
     ${SDL2_LIBRARIES}
     pendulum
     gauss_elimination
@@ -27,8 +27,8 @@ target_link_libraries(pendulum_simulator PUBLIC
 )
 
 # コンパイルオプション
-target_compile_options(pendulum_simulator PUBLIC
+target_compile_options(pendulum_simulation PUBLIC
     $<$<CONFIG:Debug>: -O0 -g -Wall>
     $<$<CONFIG:Release>: -O3 -Wall>
 )
-target_compile_features(pendulum_simulator PRIVATE cxx_std_11)
+target_compile_features(pendulum_simulation PRIVATE cxx_std_11)

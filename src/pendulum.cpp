@@ -11,7 +11,7 @@ using namespace std;
 */
 const double Pendulum::PI = 3.1415926535;
 const double Pendulum::G = 9.8;
-const double Pendulum::time_delta = 0.0001;
+const double Pendulum::time_delta = 0.0002;
 Pendulum::Pendulum(int pendulum_num, vector<double> string_lengths,
                    vector<double> masss, vector<double> thetas,
                    vector<double> velocitys)

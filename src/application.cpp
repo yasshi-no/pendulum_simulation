@@ -39,6 +39,8 @@ bool Application::init()
         return false;
     }
 
+    SDL_SetWindowTitle(window, "pendulum simulation");
+
     return true;
 }
 
