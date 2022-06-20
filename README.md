@@ -2,11 +2,16 @@
 
 振り子のシミュレーション.
 
+
+https://user-images.githubusercontent.com/69578807/174525548-082524c0-aa54-41f8-8def-3bd69d227678.mp4
+
+
 ## 環境
 
-windows10 Home
-gcc version 9.2.0 (win32)
-SDL2 2.0.16
+windows10 Home  
+gcc version 9.2.0 (win32)  
+SDL2 2.0.16  
+
 
 ## 機能
 
